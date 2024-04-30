@@ -8,7 +8,8 @@ from ._checkpointing import (  # noqa
     FullModelHFCheckpointer,
     FullModelMetaCheckpointer,
     FullModelTorchTuneCheckpointer,
-    ModelType,TensorDictCheckPointer,
+    ModelType,
+    TensorDictCheckPointer,
     transform_opt_state_dict,
 )
 
