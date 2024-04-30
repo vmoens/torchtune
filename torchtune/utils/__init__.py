@@ -8,7 +8,7 @@ from ._checkpointing import (  # noqa
     FullModelHFCheckpointer,
     FullModelMetaCheckpointer,
     FullModelTorchTuneCheckpointer,
-    ModelType,
+    ModelType,TensorDictCheckPointer,
     transform_opt_state_dict,
 )
 
@@ -56,9 +56,8 @@ from .quantization import get_quantizer_mode
 from .seed import set_seed
 
 __all__ = [
-    "save_checkpoint",
+    "TensorDictCheckPointer",
     "transform_opt_state_dict",
-    "validate_checkpoint",
     "get_memory_stats",
     "log_memory_stats",
     "get_device",
