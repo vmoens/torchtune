@@ -12,6 +12,7 @@ from warnings import warn
 
 import torch
 from omegaconf import DictConfig
+from tensordict import TensorDict
 
 from torch import nn
 from torch.optim import Optimizer
@@ -512,27 +513,28 @@ class LoRADPORecipeSingleDevice(FTRecipeInterface):
                     # Log per-step metrics
                     if self.total_training_steps % self._log_every_n_steps == 0:
                         time_per_step = time.perf_counter() - t0
-                        log_dict = {
-                            "loss": loss_to_log,
-                            "lr": self._optimizer.param_groups[0]["lr"],
-                            "tokens_per_second": num_tokens / time_per_step,
-                            "rewards/chosen": chosen_rewards.mean().cpu(),
-                            "rewards/rejected": rejected_rewards.mean().cpu(),
-                            "rewards/accuracies": reward_accuracies.mean().cpu(),
-                            "rewards/margins": (chosen_rewards - rejected_rewards)
+                        log_dict = (
+                            TensorDict(
+                                {
+                                    "loss": loss_to_log,
+                                    "lr": self._optimizer.param_groups[0]["lr"],
+                                    "tokens_per_second": num_tokens / time_per_step,
+                                    "rewards/chosen": chosen_rewards,
+                                    "rewards/rejected": rejected_rewards,
+                                    "rewards/accuracies": reward_accuracies,
+                                    "rewards/margins": (
+                                        chosen_rewards - rejected_rewards
+                                    ),
+                                    "log_probs/rejected": policy_rejected_log_probs,
+                                    "log_probs/chosen": policy_chosen_log_probs,
+                                    "logits/rejected": policy_rejected_logits,
+                                    "logits/chosen": policy_chosen_logits,
+                                }
+                            )
+                            .detach()
                             .mean()
-                            .cpu(),
-                            "log_probs/rejected": policy_rejected_log_probs.detach()
-                            .mean()
-                            .cpu(),
-                            "log_probs/chosen": policy_chosen_log_probs.detach()
-                            .mean()
-                            .cpu(),
-                            "logits/rejected": policy_rejected_logits.detach()
-                            .mean()
-                            .cpu(),
-                            "logits/chosen": policy_chosen_logits.detach().mean().cpu(),
-                        }
+                            .cpu()
+                        )
                         if self._log_peak_memory_stats:
                             log_dict.update(utils.get_memory_stats(device=self._device))
                         self._metric_logger.log_dict(

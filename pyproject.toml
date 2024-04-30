@@ -23,6 +23,7 @@ dependencies = [
     # Miscellaneous
     "tqdm",
     "omegaconf",
+    "tensordict",
 
     # Quantization
     "torchao==0.1",

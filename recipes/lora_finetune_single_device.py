@@ -13,6 +13,7 @@ from warnings import warn
 
 import torch
 from omegaconf import DictConfig
+from tensordict import TensorDict
 
 from torch import nn
 from torch.optim import Optimizer
@@ -479,11 +480,13 @@ class LoRAFinetuneRecipeSingleDevice(FTRecipeInterface):
                         # Log per-step metrics
                         if self.total_training_steps % self._log_every_n_steps == 0:
                             time_per_step = time.perf_counter() - t0
-                            log_dict = {
-                                "loss": loss_to_log,
-                                "lr": self._optimizer.param_groups[0]["lr"],
-                                "tokens_per_second": num_tokens / time_per_step,
-                            }
+                            log_dict = TensorDict(
+                                {
+                                    "loss": loss_to_log,
+                                    "lr": self._optimizer.param_groups[0]["lr"],
+                                    "tokens_per_second": num_tokens / time_per_step,
+                                }
+                            )
                             if (
                                 self._device.type == "cuda"
                                 and self._log_peak_memory_stats

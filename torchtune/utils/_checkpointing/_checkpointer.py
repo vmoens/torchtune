@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol
 
 import torch
+from tensordict import TensorDict
+
 from torchtune import utils
 
 from torchtune.models import convert_weights
@@ -615,3 +617,33 @@ class FullModelMetaCheckpointer(_CheckpointerInterface):
                 f"{os.path.getsize(output_path) / 1000**3:.2f} GB "
                 f"saved to {output_path}"
             )
+
+
+class TensorDictCheckPointer(_CheckpointerInterface):
+    def __init__(
+        self,
+        checkpoint_dir: str,
+        model_type: ModelType,
+        output_dir: str,
+        resume_from_checkpoint: bool = False,
+    ) -> None:
+        self._checkpoint_dir = Path(checkpoint_dir)
+
+        self._resume_from_checkpoint = resume_from_checkpoint
+        self._model_type = model_type
+        self._output_dir = Path(output_dir)
+
+    def load_checkpoint(self) -> Dict[str, Any]:
+        return TensorDict.load(self._checkpoint_dir)
+
+    def save_checkpoint(
+        self,
+        state_dict: Dict[str, Any],
+        epoch: int,
+        intermediate_checkpoint: bool = False,
+    ) -> None:
+        self._output_dir.mkdir(exist_ok=True)
+        checkpoint_path = Path.joinpath(self._output_dir, f"meta_model_{epoch}")
+        state_dict = TensorDict(state_dict).unflatten_keys(".")
+        print("state_dict", state_dict)
+        return state_dict.save(checkpoint_path, num_threads=self.num_threads)

@@ -12,6 +12,7 @@ from warnings import warn
 
 import torch
 from omegaconf import DictConfig
+from tensordict import TensorDict
 
 from torch import nn
 from torch.optim import Optimizer
@@ -437,17 +438,19 @@ class FullFinetuneRecipeSingleDevice(FTRecipeInterface):
                     # Log per-step metrics
                     if self.total_training_steps % self._log_every_n_steps == 0:
                         time_per_step = time.perf_counter() - t0
-                        log_dict = {
-                            "loss": loss_to_log,
-                            # NOTE: for optim in backward, this assumes all optimizers have the same LR. This is currently
-                            # true since we don't expose the ability to configure this yet.
-                            "lr": (
-                                self._optim_ckpt_wrapper.get_optim_key("lr")
-                                if self._optimizer_in_bwd
-                                else self._optimizer.param_groups[0]["lr"]
-                            ),
-                            "tokens_per_second": num_tokens / time_per_step,
-                        }
+                        log_dict = TensorDict(
+                            {
+                                "loss": loss_to_log,
+                                # NOTE: for optim in backward, this assumes all optimizers have the same LR. This is currently
+                                # true since we don't expose the ability to configure this yet.
+                                "lr": (
+                                    self._optim_ckpt_wrapper.get_optim_key("lr")
+                                    if self._optimizer_in_bwd
+                                    else self._optimizer.param_groups[0]["lr"]
+                                ),
+                                "tokens_per_second": num_tokens / time_per_step,
+                            }
+                        )
                         if self._device.type == "cuda" and self._log_peak_memory_stats:
                             log_dict.update(utils.get_memory_stats(device=self._device))
                         self._metric_logger.log_dict(
