@@ -42,7 +42,7 @@ tokenizer:
 #  output_dir: /tmp/Llama-2-7b-hf
 #  model_type: LLAMA2
 checkpointer:
-  _component_: torchtune.utils.TensorDictCheckpointer
+  _component_: torchtune.utils.TensorDictCheckPointer
   checkpoint_dir: /tmp/Llama-2-7b-td
   output_dir: /tmp/Llama-2-7b-td
   model_type: LLAMA2

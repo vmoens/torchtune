@@ -77,7 +77,6 @@ __all__ = [
     "validate_expected_param_dtype",
     "wrap_compile",
     "TuneRecipeArgumentParser",
-    "CheckpointableDataLoader",
     "OptimizerInBackwardWrapper",
     "create_optim_in_bwd_wrapper",
     "register_optim_in_bwd_hooks",
